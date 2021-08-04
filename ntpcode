@@ -1,0 +1,27 @@
+package {'ntpd':
+   name   => 'ntpd',
+   ensure => installed,
+}
+
+$ntpd_conf = 'OPTIONS="-g ntpd'
+file { '/etc/sysconfig/ntpd':
+  ensure  => present,
+  content => $ntpd_conf,
+}
+service {'nttpd':
+  ensure => running,
+  enable => true,
+
+package {'chroyd':
+   name   => 'chronyd',
+   ensure => installed,
+}
+
+$chronyd_conf = 'OPTIONS="" chronyd'
+file { '/etc/sysconfig/chronyd':
+  ensure  => present,
+  content => $chronyd_conf,
+}
+service {'chronyd':
+  ensure => running,
+  enable => true,
