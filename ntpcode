@@ -1,3 +1,7 @@
+case $facts ['os'] ['family'] {
+'redhat':
+$facts ['os'] ['family'] ['major'] {
+'rhel6': {
 package {'ntpd':
    name   => 'ntpd',
    ensure => installed,
@@ -11,7 +15,9 @@ file { '/etc/sysconfig/ntpd':
 service {'nttpd':
   ensure => running,
   enable => true,
-
+  }
+}
+'rhel7': {
 package {'chroyd':
    name   => 'chronyd',
    ensure => installed,
@@ -25,3 +31,5 @@ file { '/etc/sysconfig/chronyd':
 service {'chronyd':
   ensure => running,
   enable => true,
+  }
+  }
