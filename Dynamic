@@ -10,11 +10,11 @@ class appx {
   class appx::config_file ($String $mypackage
   $String $ensure){
     package {'$mypackage':
-      name => '$mypackage',
+      name   => '$mypackage',
       ensure => $ensure,
       }
     file {'/etc/init.d/appX':
-      ensure => present,
+      ensure  => present,
       content => 'puppet:///module/appx/files/abc.txt',
       }
       
