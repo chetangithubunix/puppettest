@@ -1,3 +1,15 @@
+Requirement:
+setup appX (version:1.0)
+package: appX
+config file: /etc/init.d/appX
+"Single manifested static module without files/templates
+Single manifested static module with files
+Single manifested static module with templates *****************
+Many manifested static module"
+service: appX(enable/on)
+hieradata(data/common.yaml)
+modules/appx/files/abc.txt
+
 ##init.pp##
 
   class appX {
