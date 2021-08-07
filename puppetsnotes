@@ -1,0 +1,133 @@
+[root@puppet-master puppet]# cat autosign.conf
+*.example.com
+agent.example.com
+[root@puppet-master puppet]#
+
+
+[root@puppet-master manifests]# pwd ; cat init.pp
+/etc/puppetlabs/code/environments/production/modules/testdb/manifests
+class testdb (
+  String $ensure_file,
+  ) {
+  file{'/var/tmp/db-config.db':
+    ensure => $ensure_file,
+  }
+}
+[root@puppet-master manifests]#
+
+[root@puppet-master manifests]# pwd ; cat init.pp
+/etc/puppetlabs/code/environments/production/modules/testfile/manifests
+class testfile (
+  String $ensure_file,
+  ) {
+
+  file{'/var/tmp/testfile':
+    ensure => $ensure_file,
+  }
+}
+[root@puppet-master manifests]#
+
+
+[root@puppet-master production]# cat /etc/puppetlabs/code/environments/production/data/common.yaml
+---
+testdb::ensure_file: 'absent'
+testweb::ensure_file: 'present'
+testfile::ensure_file: 'present'
+testuser::ensure_user: 'present'
+testuser::user_names:
+ - opsunix
+ - cbsunix
+ - cmiunix
+ - rapid7
+[root@puppet-master production]#
+
+
+[root@puppet-master production]# cat hiera.yaml
+---
+version: 5
+defaults:
+  # The default value for "datadir" is "data" under the same directory as the hiera.yaml
+  # file (this file)
+  # When specifying a datadir, make sure the directory exists.
+  # See https://puppet.com/docs/puppet/latest/environments_about.html for further details on environments.
+  datadir: data
+  data_hash: yaml_data
+hierarchy:
+  - name: "Per-node data (yaml version)"
+    path: "nodes/%{facts.fqdn}.yaml"
+  - name: "Per-group data (yaml version)"
+    path: "groups/%{facts.group}.yaml"
+  - name: "Per-role data (yaml version)"
+    path: "roles/%{facts.role}.yaml"
+  - name: "Per-profile data (yaml version)"
+    path: "profiles/%{facts.profile}.yaml"
+  - name: "Per-app data (yaml version)"
+    path: "apps/%{facts.app}.yaml"
+  - name: "Per-team data (yaml version)"
+    path: "teams/%{facts.team}.yaml"
+  - name: "Other YAML hierarchy levels"
+    paths:
+      - "common.yaml"
+[root@puppet-master production]# 
+
+[root@puppet-master data]# pwd ; ls -ltr
+/etc/puppetlabs/code/environments/production/data
+total 4
+drwxr-xr-x 2 root root  43 Aug  6 06:10 apps
+drwxr-xr-x 2 root root  49 Aug  6 06:12 roles
+-rw-r--r-- 1 root root 197 Aug  6 06:46 common.yaml
+drwxr-xr-x 2 root root  37 Aug  6 07:02 profiles
+drwxr-xr-x 2 root root  45 Aug  6 07:03 teams
+drwxr-xr-x 2 root root  38 Aug  6 07:35 nodes
+[root@puppet-master data]#
+
+
+[root@puppet-master data]# cd apps
+[root@puppet-master apps]# ls -ltr
+total 8
+-rw-r--r-- 1 root root 21 Aug  6 06:09 webapp.yaml
+-rw-r--r-- 1 root root 23 Aug  6 06:10 dbapp.yaml
+[root@puppet-master apps]# cat webapp.yaml ; cat dbapp.yaml
+classes:
+  - testweb
+---
+classes:
+ - testdb
+[root@puppet-master apps]#
+
+dbserver.yaml  webserver.yaml
+[root@puppet-master roles]# cat dbserver.yaml ; cat webserver.yaml
+---
+classes:
+ - testfile
+testdb::ensure_file: 'present'
+[root@puppet-master roles]#
+
+
+[root@puppet-master roles]# cd ../profiles
+[root@puppet-master profiles]# ls
+db.yaml  web.yaml
+[root@puppet-master profiles]# cat db.yaml ; cat web.yaml
+---
+classes:
+ - testuser
+
+testuser::ensure_user: 'absent'
+[root@puppet-master profiles]#
+
+
+[root@puppet-master profiles]#       cd ../teams
+[root@puppet-master teams]# ls
+dbteam.yaml  webteam.yaml
+[root@puppet-master teams]# cat dbteam.yaml ; cat webteam.yaml
+---
+testweb::ensure_file: 'absent'
+[root@puppet-master teams]#
+
+[root@puppet-master teams]# cd ../nodes
+[root@puppet-master nodes]# ls
+agent01.example.com.yaml
+[root@puppet-master nodes]# cat agent01.example.com.yaml
+---
+testuset::ensure_user: 'absent'
+[root@puppet-master nodes]#
